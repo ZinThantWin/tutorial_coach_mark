@@ -233,8 +233,6 @@ class TutorialCoachMark {
   }
 
   void closeHiddenView() {
-    debugPrint("TUTORIAL COACH MARK => returning from close hidden view");
-    return;
     if (_contextTutorial != null &&
         _contextTutorial!.mounted &&
         _blockBackRoute != null) {
