@@ -233,7 +233,8 @@ class TutorialCoachMark {
   }
 
   void closeHiddenView() {
-    // Verifica si hay un contexto válido antes de intentar remover la ruta
+    debugPrint("TUTORIAL COACH MARK => returning from close hidden view");
+    return;
     if (_contextTutorial != null &&
         _contextTutorial!.mounted &&
         _blockBackRoute != null) {
