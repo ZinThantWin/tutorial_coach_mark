@@ -13,38 +13,6 @@ export 'package:tutorial_coach_mark/src/target/target_focus.dart';
 export 'package:tutorial_coach_mark/src/target/target_position.dart';
 export 'package:tutorial_coach_mark/src/util.dart';
 
-/// A controller class that manages tutorial coach marks in your Flutter application.
-///
-/// This class provides functionality to display and control interactive tutorials
-/// that guide users through your app's features. It creates an overlay with
-/// highlighted areas and explanatory content.
-///
-/// Example usage:
-/// ```dart
-/// TutorialCoachMark(
-///   targets: targets, // List<TargetFocus>
-///   colorShadow: Colors.red,
-///   onSkip: () {
-///     return true; // returning true closes the tutorial
-///   },
-/// )..show(context: context);
-/// ```
-///
-/// Key features:
-/// - Multiple target focusing
-/// - Customizable animations and styling
-/// - Skip button functionality
-/// - Support for safe area
-/// - Pulse animation effects
-/// - Custom overlay filters
-///
-/// The tutorial can be controlled programmatically using methods like:
-/// - [show] - Displays the tutorial
-/// - [next] - Moves to next target
-/// - [previous] - Returns to previous target
-/// - [skip] - Skips the tutorial
-/// - [finish] - Ends the tutorial
-
 class TutorialCoachMark {
   final List<TargetFocus> targets;
   final FutureOr<void> Function(TargetFocus)? onClickTarget;
@@ -72,13 +40,10 @@ class TutorialCoachMark {
   final ImageFilter? imageFilter;
   final String? backgroundSemanticLabel;
   final int initialFocus;
-  final GlobalKey<TutorialCoachMarkWidgetState> _widgetKey = GlobalKey();
   final bool disableBackButton;
 
+  final GlobalKey<TutorialCoachMarkWidgetState> _widgetKey = GlobalKey();
   OverlayEntry? _overlayEntry;
-  ModalRoute?
-      _blockBackRoute; // Referencia a la ruta que bloquea el botón "Atrás"
-  BuildContext? _contextTutorial; // Almacena el contexto para usarlo después
 
   TutorialCoachMark({
     required this.targets,
@@ -110,32 +75,35 @@ class TutorialCoachMark {
   OverlayEntry _buildOverlay({bool rootOverlay = false}) {
     return OverlayEntry(
       builder: (context) {
-        return TutorialCoachMarkWidget(
-          key: _widgetKey,
-          targets: targets,
-          clickTarget: onClickTarget,
-          onClickTargetWithTapPosition: onClickTargetWithTapPosition,
-          clickOverlay: onClickOverlay,
-          paddingFocus: paddingFocus,
-          onClickSkip: skip,
-          alignSkip: alignSkip,
-          skipWidget: skipWidget,
-          textSkip: textSkip,
-          textStyleSkip: textStyleSkip,
-          hideSkip: hideSkip,
-          useSafeArea: useSafeArea,
-          colorShadow: colorShadow,
-          opacityShadow: opacityShadow,
-          focusAnimationDuration: focusAnimationDuration,
-          unFocusAnimationDuration: unFocusAnimationDuration,
-          pulseAnimationDuration: pulseAnimationDuration,
-          pulseEnable: pulseEnable,
-          finish: finish,
-          rootOverlay: rootOverlay,
-          showSkipInLastTarget: showSkipInLastTarget,
-          imageFilter: imageFilter,
-          initialFocus: initialFocus,
-          backgroundSemanticLabel: backgroundSemanticLabel,
+        return PopScope(
+          canPop: !disableBackButton,
+          child: TutorialCoachMarkWidget(
+            key: _widgetKey,
+            targets: targets,
+            clickTarget: onClickTarget,
+            onClickTargetWithTapPosition: onClickTargetWithTapPosition,
+            clickOverlay: onClickOverlay,
+            paddingFocus: paddingFocus,
+            onClickSkip: skip,
+            alignSkip: alignSkip,
+            skipWidget: skipWidget,
+            textSkip: textSkip,
+            textStyleSkip: textStyleSkip,
+            hideSkip: hideSkip,
+            useSafeArea: useSafeArea,
+            colorShadow: colorShadow,
+            opacityShadow: opacityShadow,
+            focusAnimationDuration: focusAnimationDuration,
+            unFocusAnimationDuration: unFocusAnimationDuration,
+            pulseAnimationDuration: pulseAnimationDuration,
+            pulseEnable: pulseEnable,
+            finish: finish,
+            rootOverlay: rootOverlay,
+            showSkipInLastTarget: showSkipInLastTarget,
+            imageFilter: imageFilter,
+            initialFocus: initialFocus,
+            backgroundSemanticLabel: backgroundSemanticLabel,
+          ),
         );
       },
     );
@@ -164,25 +132,8 @@ class TutorialCoachMark {
     required OverlayState overlay,
     bool rootOverlay = false,
   }) {
-    _contextTutorial = overlay.context; // Guarda el contexto del overlay
     postFrame(() {
       _createAndShow(overlay, rootOverlay: rootOverlay);
-      if (disableBackButton) {
-        // Bloquea el botón "Atrás" mientras el tutorial está activo
-        _blockBackRoute = PageRouteBuilder(
-          opaque: false,
-          barrierDismissible: false,
-          pageBuilder: (context, _, __) {
-            return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (value, result) async =>
-                  false, // Bloquea el retroceso
-              child: const SizedBox(), // No muestra nada
-            );
-          },
-        );
-        Navigator.of(_contextTutorial!).push(_blockBackRoute!);
-      }
     });
   }
 
@@ -223,24 +174,7 @@ class TutorialCoachMark {
   void _removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-    closeHiddenView();
   }
 
-  void removeOverlayEntry() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
-    closeHiddenView();
-  }
-
-  void closeHiddenView() {
-    debugPrint("TUTORIAL COACH MARK => returning from close hidden view");
-    return;
-    if (_contextTutorial != null &&
-        _contextTutorial!.mounted &&
-        _blockBackRoute != null) {
-      Navigator.of(_contextTutorial!).removeRoute(_blockBackRoute!);
-      _blockBackRoute = null;
-    }
-    _contextTutorial = null;
-  }
+  void removeOverlayEntry() => _removeOverlay();
 }
